@@ -1,0 +1,74 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Account Management";
+}
+
+<h1 class="text-muted my-3">Account Management</h1>
+<form id="profile-form" method="post">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.DisplayName"></label>
+            <input asp-for="AccountDetails.DisplayName" class="form-control" disabled />
+        </div>
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.Country"></label>
+            <input asp-for="AccountDetails.Country" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.GivenName"></label>
+            <input asp-for="AccountDetails.GivenName" class="form-control" />
+        </div>
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.StreetAddressLine1"></label>
+            <input asp-for="AccountDetails.StreetAddressLine1" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.SurName"></label>
+            <input asp-for="AccountDetails.SurName" class="form-control" />
+        </div>
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.StreetAddressLine2"></label>
+            <input asp-for="AccountDetails.StreetAddressLine2" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.Email"></label>
+            <input asp-for="AccountDetails.Email" class="form-control" />
+        </div>
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.City"></label>
+            <input asp-for="AccountDetails.City" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.PhoneNumber"></label>
+            <input asp-for="AccountDetails.PhoneNumber" class="form-control" />
+        </div>
+        <div class="form-group col-md-4">
+            <label asp-for="AccountDetails.Region"></label>
+            <input asp-for="AccountDetails.Region" class="form-control" />
+        </div>
+        <div class="form-group col-md-2">
+            <label asp-for="AccountDetails.PostalCode"></label>
+            <input asp-for="AccountDetails.PostalCode" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="AccountDetails.DateOfBirth"></label>
+            <input asp-for="AccountDetails.DateOfBirth" class="form-control" />
+        </div>
+    </div>
+    <button id="update-profile-button" type="submit" class="btn btn-dark">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
