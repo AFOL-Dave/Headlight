@@ -1,17 +1,29 @@
-﻿<!DOCTYPE html>
+﻿@using Headlight.Models.Options
+@using Microsoft.Extensions.Options
+@inject IOptions<LugOptions> lugOptions
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Website</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>@lugOptions.Value.ShortName - @ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
+    <environment include="development">
+        <link rel="stylesheet" href="~/css/klug.css" />
+    </environment>
+    <environment exclude="development">
+        <link rel="stylesheet" href="~/css/klug.min.css" asp-append-version="true"/>
+    </environment>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Website</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">
+                    <img src="/gph/KLUG Logo.gif" class="lug-logo"/>
+                </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -25,6 +37,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
@@ -37,12 +50,12 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2021 - Website - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2021 - @lugOptions.Value.ShortName - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

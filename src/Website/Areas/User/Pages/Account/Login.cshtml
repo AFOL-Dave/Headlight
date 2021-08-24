@@ -1,0 +1,43 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1>Login</h1>
+<div class="row">
+    <div class="col-md">
+        <section>
+            <h4>Please select from one of these identity providers:</h4>
+            <hr />
+            @{
+                if ((Model.IdentityProviders?.Count ?? 0) == 0)
+                {
+                    <div>
+                        <p>
+                            The are no external identity providers configured. Please contact this site's administrator to correct this issue.
+                            Or, if you are the administrator, please reference <a href="https://go.microsoft.com/fwlink/?LinkID=532715">this article</a> for details on setting up external identity providers.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <form method="post" class="form-horizontal" id="external-account" asp-page="./ExternalLogin" asp-route-returnUtl="@Model.ReturnUrl">
+                        <div>
+                            <p>
+                                @foreach (AuthenticationScheme provider in Model.IdentityProviders)
+                                {
+                                    <button type="submit" class="btn btn-dark" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
