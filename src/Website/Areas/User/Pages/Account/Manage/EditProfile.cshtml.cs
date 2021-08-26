@@ -12,6 +12,9 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         [BindProperty]
         public AccountDetails AccountDetails { get; set; }
 
+        [TempData]
+        public string StatusMessage { get; set; }
+
         public IndexModel(UserManager<HeadLightUser> userManager,
                           SignInManager<HeadLightUser> signInManager)
         {
@@ -67,13 +70,6 @@ namespace Headlight.Areas.User.Pages.Account.Manage
                 userChanged = true;
             }
 
-            if (AccountDetails.Email != user.Email)
-            {
-                user.Email = AccountDetails.Email;
-                user.EmailConfirmed = false;
-                userChanged = true;
-            }
-
             if (AccountDetails.City != user.City)
             {
                 user.City = AccountDetails.City;
@@ -123,6 +119,7 @@ namespace Headlight.Areas.User.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Your profile has been updated.";
             return RedirectToPage();
         }
 
