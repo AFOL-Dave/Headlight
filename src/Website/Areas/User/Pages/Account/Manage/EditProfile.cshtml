@@ -1,72 +1,73 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Account Management";
+    ViewData["Title"] = "Profile";
 }
 
-<h1 class="text-muted my-3">Account Management</h1>
+<h1 class="text-muted my-3">Profile</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
 <form id="profile-form" method="post">
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.DisplayName"></label>
-            <input asp-for="AccountDetails.DisplayName" class="form-control" disabled />
+            <input asp-for="AccountDetails.DisplayName" class="form-control" tabindex="1"/>
         </div>
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.Country"></label>
-            <input asp-for="AccountDetails.Country" class="form-control" />
+            <input asp-for="AccountDetails.Country" class="form-control" tabindex="6"/>
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.GivenName"></label>
-            <input asp-for="AccountDetails.GivenName" class="form-control" />
+            <input asp-for="AccountDetails.GivenName" class="form-control" tabindex="2"/>
         </div>
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.StreetAddressLine1"></label>
-            <input asp-for="AccountDetails.StreetAddressLine1" class="form-control" />
+            <input asp-for="AccountDetails.StreetAddressLine1" class="form-control" tabindex="7"/>
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.SurName"></label>
-            <input asp-for="AccountDetails.SurName" class="form-control" />
+            <input asp-for="AccountDetails.SurName" class="form-control" tabindex="3"/>
         </div>
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.StreetAddressLine2"></label>
-            <input asp-for="AccountDetails.StreetAddressLine2" class="form-control" />
+            <input asp-for="AccountDetails.StreetAddressLine2" class="form-control" tabindex="8"/>
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.Email"></label>
-            <input asp-for="AccountDetails.Email" class="form-control" />
+            <input asp-for="AccountDetails.Email" class="form-control" disabled/>
         </div>
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.City"></label>
-            <input asp-for="AccountDetails.City" class="form-control" />
+            <input asp-for="AccountDetails.City" class="form-control" tabindex="9"/>
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.PhoneNumber"></label>
-            <input asp-for="AccountDetails.PhoneNumber" class="form-control" />
+            <input asp-for="AccountDetails.PhoneNumber" class="form-control" tabindex="4"/>
         </div>
         <div class="form-group col-md-4">
             <label asp-for="AccountDetails.Region"></label>
-            <input asp-for="AccountDetails.Region" class="form-control" />
+            <input asp-for="AccountDetails.Region" class="form-control" tabindex="10"/>
         </div>
         <div class="form-group col-md-2">
             <label asp-for="AccountDetails.PostalCode"></label>
-            <input asp-for="AccountDetails.PostalCode" class="form-control" />
+            <input asp-for="AccountDetails.PostalCode" class="form-control" tabindex="11"/>
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label asp-for="AccountDetails.DateOfBirth"></label>
-            <input asp-for="AccountDetails.DateOfBirth" class="form-control" />
+            <input asp-for="AccountDetails.DateOfBirth" class="form-control" tabindex="5"/>
         </div>
     </div>
-    <button id="update-profile-button" type="submit" class="btn btn-dark">Save</button>
+    <button id="update-profile-button" type="submit" class="btn btn-dark" tabindex="12">Save</button>
 </form>
 
 @section Scripts {
