@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Headlight.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,14 +12,16 @@ using Microsoft.Extensions.Logging;
 namespace Headlight.Areas.User.Pages.Account
 {
     [AllowAnonymous]
-    public class EmailValidationModel : PageModel
+    public class EmailConfirmationModel : PageModel
     {
         public string ValidationMessage { get; set; }
 
-        public EmailValidationModel(UserManager<HeadLightUser> userManager,
-                                    ILogger<EmailValidationModel> logger)
+        public EmailConfirmationModel(UserManager<HeadLightUser> userManager,
+                                      IEmailSender emailSender,
+                                      ILogger<EmailConfirmationModel> logger)
         {
             _userManager = userManager;
+            _emailSender = emailSender;
             _logger = logger;
         }
 
@@ -41,12 +44,38 @@ namespace Headlight.Areas.User.Pages.Account
             }
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+
+            // Capture if the user has previously confirmed their email address, so that the administrator is not spammed everytime the user clicks the link in their email.
+            bool WasEmailPreviouslyConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
             IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
-            ValidationMessage = result.Succeeded ? "Thank you for confirming your email. In order to fully engage, the LUG Administrator must approve your account." : "There was an error validatig your email.";
+
+            if (result.Succeeded)
+            {
+                ValidationMessage = "Thank you for confirming your email. In order to fully engage, the LUG Administrator must approve your account.";
+
+                if (!WasEmailPreviouslyConfirmed)
+                {
+                    SendAdministratorEmail();
+                }
+            }
+            else
+            {
+                ValidationMessage = "There was an error validatig your email.";
+            }
+
             return Page();
         }
 
+        private void SendAdministratorEmail()
+        {
+            _emailSender.SendEmailAsync("info@kenshalug.org",
+                                        "New Registration",
+                                        $"A new user has registered.");
+        }
+
         private readonly UserManager<HeadLightUser> _userManager;
-        private readonly ILogger<EmailValidationModel> _logger;
+        private readonly ILogger<EmailConfirmationModel> _logger;
+        private readonly IEmailSender _emailSender;
     }
 }

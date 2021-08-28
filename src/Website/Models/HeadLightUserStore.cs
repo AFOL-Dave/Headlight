@@ -169,7 +169,7 @@ namespace Headlight.Models
             logger.LogInformation("Entered GetEmailConfirmedAsync");
 
             logger.LogInformation("Successfully Leaving GetEmailConfirmedAsync");
-            return Task.FromResult(true);
+            return Task.FromResult(user.EmailConfirmed);
         }
 
         public async Task<IList<UserLoginInfo>> GetLoginsAsync(HeadLightUser user, CancellationToken cancellationToken = new ())
@@ -248,7 +248,7 @@ namespace Headlight.Models
             logger.LogInformation("Entered GetUserNameAsync");
 
             logger.LogInformation("Successfully Leaving GetUserNameAsync");
-            return Task.FromResult(user.UserName);
+            return Task.FromResult(user.DisplayName);
         }
 
         public Task<IList<HeadLightUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = new ())
@@ -335,11 +335,11 @@ namespace Headlight.Models
             return Task.CompletedTask;
         }
 
-        public Task SetNormalizedUserNameAsync(HeadLightUser user, string normalizedName, CancellationToken cancellationToken = new ())
+        public Task SetNormalizedUserNameAsync(HeadLightUser user, string normalizedUserName, CancellationToken cancellationToken = new ())
         {
             logger.LogInformation("Entered SetNormalizedUserNameAsync");
 
-            user.NormalizedUserName = normalizedName;
+            user.NormalizedUserName = normalizedUserName;
 
             logger.LogInformation("Successfully Leaving SetNormalizedUserNameAsync");
             return Task.CompletedTask;

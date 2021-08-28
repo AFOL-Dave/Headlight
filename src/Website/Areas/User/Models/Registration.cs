@@ -6,7 +6,7 @@ namespace Headlight.Areas.User.Models
     public class Registration
     {
         [Required]
-        [Display(Description = "Date of Birth")]
+        [Display(Name = "Date of Birth")]
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
@@ -15,7 +15,7 @@ namespace Headlight.Areas.User.Models
         public string Email { get; set; }
 
         [Required]
-        [Display(Description = "Display Name")]
+        [Display(Name = "Display Name")]
         public string DisplayName { get; set; }
     }
 }
