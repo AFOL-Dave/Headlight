@@ -161,7 +161,7 @@ namespace Headlight.Areas.User.Pages.Account
                         string userId = await _userManager.GetUserIdAsync(newUser);
                         string code = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        string callbackUrl = Url.Page("/Account/EmailValidation",
+                        string callbackUrl = Url.Page("/Account/EmailConfirmation",
                                                       pageHandler: null,
                                                       values: new { area = "User", userId, code },
                                                       protocol: Request.Scheme);

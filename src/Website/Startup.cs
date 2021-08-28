@@ -39,8 +39,6 @@ namespace Headlight
             services.Configure<IdentityOptions>(options =>
             {
                 options.User.RequireUniqueEmail = true;
-                options.SignIn.RequireConfirmedAccount = true;
-                options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.AddRazorPages(options =>

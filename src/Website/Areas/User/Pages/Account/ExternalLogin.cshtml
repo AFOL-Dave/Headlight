@@ -1,17 +1,16 @@
 ﻿@page
 @model ExternalLoginModel
 @{
-    ViewData["Title"] = "";
+    ViewData["Title"] = "Registration";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1>Registration</h1>
 
 <h4 id="external-login-title">Finish Registration Using Your @Model.ProviderDisplayName Account</h4>
 <hr />
 <p id="external-login-description" class="text-info">
     You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
+    Please enter the required details below and click the Finish button to complete registration.
 </p>
 
 <div class="row">
