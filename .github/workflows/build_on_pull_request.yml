@@ -33,4 +33,4 @@ jobs:
 
       # Publish output
       - name: Publish
-        run: dotnet publish -c Release -o Drop
+        run: dotnet publish ./src/Headlight.sln -c Release -o Drop
