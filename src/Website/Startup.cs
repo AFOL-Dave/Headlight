@@ -118,6 +118,12 @@ namespace Headlight
                         break;
 
                     case "twitter":
+                        builder.AddTwitter("Twitter", identityProvider.DisplayName, options =>
+                        {
+                            options.ConsumerKey = identityProvider.ClientId;
+                            options.ConsumerSecret = identityProvider.ClientSecret;
+                            options.RetrieveUserDetails = true;
+                        });
                         break;
 
                     case "google":
