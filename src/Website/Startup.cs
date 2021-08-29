@@ -127,6 +127,11 @@ namespace Headlight
                         break;
 
                     case "google":
+                        builder.AddGoogle("Google", identityProvider.DisplayName, options =>
+                        {
+                            options.ClientId = identityProvider.ClientId;
+                            options.ClientSecret = identityProvider.ClientSecret;
+                        });
                         break;
 
                     default:
