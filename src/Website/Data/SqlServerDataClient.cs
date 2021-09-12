@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Headlight.Data.Entity;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Headlight.Data
 {
-    public class SqlServerDataClient : IUserDataClient
+    public class SqlServerDataClient : IUserDataClient, IUserGroupDataClient, IMembershipDataClient
     {
         public SqlServerDataClient(IOptions<SqlServerDataClientOptions> options, ILogger<SqlServerDataClient> logger)
         {
@@ -510,6 +511,705 @@ namespace Headlight.Data
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region IUserGroupDataClient Implementation
+
+        public async Task CreateUserGroupAsync(IUserGroupEntity userGroupEntity, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered CreateUserGroupAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[CreateUserGroup]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter idParameter = new SqlParameter("@id", SqlDbType.BigInt)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(idParameter);
+            logger.LogTrace($"Parameter {idParameter.ParameterName} of type {idParameter.SqlDbType} with direction {idParameter.Direction}");
+
+            SqlParameter fullNameParameter = new SqlParameter("@fullName", SqlDbType.NVarChar, 256) { Value = userGroupEntity.FullName };
+            command.Parameters.Add(fullNameParameter);
+            logger.LogTrace($"Parameter {fullNameParameter.ParameterName} of type {fullNameParameter.SqlDbType} has value {fullNameParameter.Value}");
+
+            SqlParameter joinTypeParameter = new SqlParameter("@joinType", SqlDbType.TinyInt) { Value = userGroupEntity.JoinType };
+            command.Parameters.Add(joinTypeParameter);
+            logger.LogTrace($"Parameter {joinTypeParameter.ParameterName} of type {joinTypeParameter.SqlDbType} has value {joinTypeParameter.Value}");
+
+            SqlParameter normalizedFullNameParameter = new SqlParameter("@normalizedFullName", SqlDbType.NVarChar, 256) { Value = userGroupEntity.NormalizedFullName };
+            command.Parameters.Add(normalizedFullNameParameter);
+            logger.LogTrace($"Parameter {normalizedFullNameParameter.ParameterName} of type {normalizedFullNameParameter.SqlDbType} has value {normalizedFullNameParameter.Value}");
+
+            SqlParameter shortNameParameter = new SqlParameter("@shortName", SqlDbType.NVarChar, 64) { Value = userGroupEntity.ShortName };
+            command.Parameters.Add(shortNameParameter);
+            logger.LogTrace($"Parameter {shortNameParameter.ParameterName} of type {shortNameParameter.SqlDbType} has value {shortNameParameter.Value}");
+
+            SqlParameter normalizedShortNameParameter = new SqlParameter("@normalizedShortName", SqlDbType.NVarChar, 64) { Value = userGroupEntity.NormalizedShortName };
+            command.Parameters.Add(normalizedShortNameParameter);
+            logger.LogTrace($"Parameter {normalizedShortNameParameter.ParameterName} of type {normalizedShortNameParameter.SqlDbType} has value {normalizedShortNameParameter.Value}");
+
+            SqlParameter slackWorkspaceIdParameter = new SqlParameter("@slackWorkspaceId", SqlDbType.NVarChar, 256) { Value = string.IsNullOrWhiteSpace(userGroupEntity.SlackWorkspaceId) ? DBNull.Value : userGroupEntity.SlackWorkspaceId };
+            command.Parameters.Add(slackWorkspaceIdParameter);
+            logger.LogTrace($"Parameter {slackWorkspaceIdParameter.ParameterName} of type {slackWorkspaceIdParameter.SqlDbType} has value {slackWorkspaceIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                userGroupEntity.Id = (long)idParameter.Value;
+                logger.LogInformation("Successfully Leaving CreateUserGroupAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in CreateUserGroupAsync");
+                throw;
+            }
+        }
+
+        public async Task DeleteUserGroupAsync(IUserGroupEntity userGroupEntity, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered DeleteUserGroupAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[DeleteUserGroup]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter userGroupIdParameter = new SqlParameter("@id", SqlDbType.BigInt) { Value = userGroupEntity.Id };
+            command.Parameters.Add(userGroupIdParameter);
+            logger.LogTrace($"Parameter {userGroupIdParameter.ParameterName} of type {userGroupIdParameter.SqlDbType} has value {userGroupIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                logger.LogInformation("Successfully Leaving DeleteUserGroupAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in DeleteUserGroupAsync");
+                throw;
+            }
+        }
+
+        public async Task<IUserGroupEntity> RetrieveUserGroupAsync(CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered RetrieveUserGroupAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveUserGroup]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IUserGroupEntity userGroupEntity = await LoadUserGroupEntity(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupAsync");
+
+                return userGroupEntity;
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in RetrieveUserGroupAsync");
+                throw;
+            }
+        }
+
+        public async Task<IUserGroupEntity> RetrieveUserGroupByFullNameAsync(string normalizedFullName, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered RetrieveUserGroupByFullNameAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveUserGroupByFullName]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter normalizedFullNameParameter = new SqlParameter("@normalizedFullName", SqlDbType.NVarChar, 256) { Value = normalizedFullName };
+            command.Parameters.Add(normalizedFullNameParameter);
+            logger.LogTrace($"Parameter {normalizedFullNameParameter.ParameterName} of type {normalizedFullNameParameter.SqlDbType} has value {normalizedFullNameParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IUserGroupEntity userGroupEntity = await LoadUserGroupEntity(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupByFullNameAsync");
+
+                return userGroupEntity;
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in RetrieveUserGroupByFullNameAsync");
+                throw;
+            }
+        }
+
+        public async Task<IUserGroupEntity> RetrieveUserGroupByShortNameAsync(string normalizedShortName, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered RetrieveUserGroupByShortNameAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveUserGroupByShortName]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter normalizedShortNameParameter = new SqlParameter("@normalizedShortName", SqlDbType.NVarChar, 64) { Value = normalizedShortName };
+            command.Parameters.Add(normalizedShortNameParameter);
+            logger.LogTrace($"Parameter {normalizedShortNameParameter.ParameterName} of type {normalizedShortNameParameter.SqlDbType} has value {normalizedShortNameParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IUserGroupEntity userGroupEntity = await LoadUserGroupEntity(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupByShortNameAsync");
+
+                return userGroupEntity;
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in RetrieveUserGroupByShortNameAsync");
+                throw;
+            }
+        }
+
+        public async Task<IUserGroupEntity> RetrieveUserGroupByUserGroupIdAsync(long userGroupId, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered RetrieveUserGroupByUserGroupIdAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveUserGroupByUserGroupId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter idParameter = new SqlParameter("@id", SqlDbType.BigInt) { Value = userGroupId };
+            command.Parameters.Add(idParameter);
+            logger.LogTrace($"Parameter {idParameter.ParameterName} of type {idParameter.SqlDbType} has value {idParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IUserGroupEntity userGroupEntity = await LoadUserGroupEntity(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupByUserGroupIdAsync");
+
+                return userGroupEntity;
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in RetrieveUserGroupByUserGroupIdAsync");
+                throw;
+            }
+        }
+
+        public async Task<IList<IUserGroupEntity>> RetrieveUserGroupsByJoinTypeAsync(byte joinTypes, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered RetrieveUserGroupsByJoinTypeAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveUserGroupsByJoinType]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter joinTypeParameter = new SqlParameter("@joinType", SqlDbType.TinyInt) { Value = joinTypes };
+            command.Parameters.Add(joinTypeParameter);
+            logger.LogTrace($"Parameter {joinTypeParameter.ParameterName} of type {joinTypeParameter.SqlDbType} has value {joinTypeParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IList<IUserGroupEntity> userGroupEntities = await LoadUserGroupEntities(reader, cancellationToken);
+                
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupByJoinTypeAsync");
+
+                return userGroupEntities;
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in RetrieveUserGroupByJoinTypeAsync");
+                throw;
+            }
+        }
+
+        public async Task UpdateUserGroupAsync(IUserGroupEntity userGroupEntity, CancellationToken cancellationToken = default)
+        {
+            logger.LogInformation("Entered UpdateUserGroupAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString); 
+            await using SqlCommand command = new SqlCommand("[dbo].[UpdateUserGroup]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter idParameter = new SqlParameter("@id", SqlDbType.BigInt){ Value = userGroupEntity.Id};
+            command.Parameters.Add(idParameter);
+            logger.LogTrace($"Parameter {idParameter.ParameterName} of type {idParameter.SqlDbType} has value {idParameter.Value}");
+
+            SqlParameter fullNameParameter = new SqlParameter("@fullName", SqlDbType.NVarChar, 256) { Value = userGroupEntity.FullName };
+            command.Parameters.Add(fullNameParameter);
+            logger.LogTrace($"Parameter {fullNameParameter.ParameterName} of type {fullNameParameter.SqlDbType} has value {fullNameParameter.Value}");
+
+            SqlParameter joinTypeParameter = new SqlParameter("@joinType", SqlDbType.TinyInt) { Value = userGroupEntity.JoinType };
+            command.Parameters.Add(joinTypeParameter);
+            logger.LogTrace($"Parameter {joinTypeParameter.ParameterName} of type {joinTypeParameter.SqlDbType} has value {joinTypeParameter.Value}");
+
+            SqlParameter normalizedFullNameParameter = new SqlParameter("@normalizedFullName", SqlDbType.NVarChar, 256) { Value = userGroupEntity.NormalizedFullName };
+            command.Parameters.Add(normalizedFullNameParameter);
+            logger.LogTrace($"Parameter {normalizedFullNameParameter.ParameterName} of type {normalizedFullNameParameter.SqlDbType} has value {normalizedFullNameParameter.Value}");
+
+            SqlParameter shortNameParameter = new SqlParameter("@shortName", SqlDbType.NVarChar, 64) { Value = userGroupEntity.ShortName };
+            command.Parameters.Add(shortNameParameter);
+            logger.LogTrace($"Parameter {shortNameParameter.ParameterName} of type {shortNameParameter.SqlDbType} has value {shortNameParameter.Value}");
+
+            SqlParameter normalizedShortNameParameter = new SqlParameter("@normalizedShortName", SqlDbType.NVarChar, 64) { Value = userGroupEntity.NormalizedShortName };
+            command.Parameters.Add(normalizedShortNameParameter);
+            logger.LogTrace($"Parameter {normalizedShortNameParameter.ParameterName} of type {normalizedShortNameParameter.SqlDbType} has value {normalizedShortNameParameter.Value}");
+
+            SqlParameter slackWorkspaceIdParameter = new SqlParameter("@slackWorkspaceId", SqlDbType.NVarChar, 256) { Value = string.IsNullOrWhiteSpace(userGroupEntity.SlackWorkspaceId) ? DBNull.Value : userGroupEntity.SlackWorkspaceId };
+            command.Parameters.Add(slackWorkspaceIdParameter);
+            logger.LogTrace($"Parameter {slackWorkspaceIdParameter.ParameterName} of type {slackWorkspaceIdParameter.SqlDbType} has value {slackWorkspaceIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+
+                logger.LogInformation("Successfully Leaving UpdateUserGroupAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in UpdateUserGroupAsync");
+                throw;
+            }
+        }
+
+        private async Task<IUserGroupEntity> LoadUserGroupEntity(SqlDataReader reader, CancellationToken cancellationToken = new CancellationToken())
+        {
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                return new UserGroupEntity
+                {
+                    Id = reader.GetInt64("Id"),
+                    FullName = reader.GetString("FullName"),
+                    JoinType = reader.GetByte("JoinType"),
+                    NormalizedFullName = reader.GetString("NormalizedFullName"),
+                    ShortName = reader.GetString("ShortName"),
+                    NormalizedShortName = reader.GetString("NormalizedShortName"),
+                    SlackWorkspaceId = await reader.IsDBNullAsync("SlackWorkspaceId", cancellationToken)
+                        ? null
+                        : reader.GetString("SlackWorkspaceId")
+                };
+            }
+
+            return null;
+        }
+
+        private async Task<List<IUserGroupEntity>> LoadUserGroupEntities(SqlDataReader reader, CancellationToken cancellationToken = new CancellationToken())
+        {
+            List<IUserGroupEntity> result = new List<IUserGroupEntity>();
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                result.Add(new UserGroupEntity
+                {
+                    Id = reader.GetInt64("Id"),
+                    FullName = reader.GetString("FullName"),
+                    JoinType = reader.GetByte("JoinType"),
+                    NormalizedFullName = reader.GetString("NormalizedFullName"),
+                    ShortName = reader.GetString("ShortName"),
+                    NormalizedShortName = reader.GetString("NormalizedShortName"),
+                    SlackWorkspaceId = await reader.IsDBNullAsync("SlackWorkspaceId", cancellationToken)
+                        ? null
+                        : reader.GetString("SlackWorkspaceId")
+                });
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region #IMembershipDataClient Implementaion
+
+        public async Task CreateMembershipAsync(IMembershipEntity membershipEntity, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered CreateMembershipAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[CreateMembership]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter idParameter = new SqlParameter("@id", SqlDbType.BigInt)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(idParameter);
+            logger.LogTrace($"Parameter {idParameter.ParameterName} of type {idParameter.SqlDbType} with direction {idParameter.Direction}");
+
+            SqlParameter userIdParameter = new SqlParameter("@userId", SqlDbType.BigInt) { Value = membershipEntity.UserId };
+            command.Parameters.Add(userIdParameter);
+            logger.LogTrace($"Parameter {userIdParameter.ParameterName} of type {userIdParameter.SqlDbType} has value {userIdParameter.Value}");
+
+            SqlParameter userGroupIdParameter = new SqlParameter("@userGroupId", SqlDbType.BigInt) { Value = membershipEntity.UserGroupId };
+            command.Parameters.Add(userGroupIdParameter);
+            logger.LogTrace($"Parameter {userGroupIdParameter.ParameterName} of type {userGroupIdParameter.SqlDbType} has value {userGroupIdParameter.Value}");
+
+            SqlParameter isActiveParameter = new SqlParameter("@isActive", SqlDbType.Bit) { Value = membershipEntity.IsActive };
+            command.Parameters.Add(isActiveParameter);
+            logger.LogTrace($"Parameter {isActiveParameter.ParameterName} of type {isActiveParameter.SqlDbType} has value {isActiveParameter.Value}");
+
+            SqlParameter slackMembershipIdParameter = new SqlParameter("@slackMemberId", SqlDbType.NVarChar, 256) { Value = string.IsNullOrWhiteSpace(membershipEntity.SlackMemberId) ? DBNull.Value : membershipEntity.SlackMemberId };
+            command.Parameters.Add(slackMembershipIdParameter);
+            logger.LogTrace($"Parameter {slackMembershipIdParameter.ParameterName} of type {slackMembershipIdParameter.SqlDbType} has value {slackMembershipIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                membershipEntity.Id = (long)idParameter.Value;
+                logger.LogInformation("Successfully Leaving CreateMembershipAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in CreateMembershipAsync");
+                throw;
+            }
+        }
+
+        public async Task DeleteMembershipAsync(IMembershipEntity membershipEntity, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered DeleteMembershipAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[DeleteMembership]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter membershipIdParameter = new SqlParameter("@id", SqlDbType.BigInt) { Value = membershipEntity.Id };
+            command.Parameters.Add(membershipIdParameter);
+            logger.LogTrace($"Parameter {membershipIdParameter.ParameterName} of type {membershipIdParameter.SqlDbType} has value {membershipIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                logger.LogInformation("Successfully Leaving DeleteMembershipAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in DeleteMembershipAsync");
+                throw;
+            }
+        }
+
+        public async Task<IUserGroupEntity> RetrieveCurrentUserGroupAsync(long userId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveCurrentUserGroupAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveMembershipsByUserId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter userIdParameter = new SqlParameter("@userId", SqlDbType.BigInt) { Value = userId };
+            command.Parameters.Add(userIdParameter);
+            logger.LogTrace($"Parameter {userIdParameter.ParameterName} of type {userIdParameter.SqlDbType} has value {userIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IMembershipEntity currentMembership = (await LoadMembershipEntities(reader, cancellationToken)).FirstOrDefault(m => m.IsCurrent == true);
+                IUserGroupEntity result = await RetrieveUserGroupByUserGroupIdAsync(currentMembership.UserGroupId, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveCurrentUserGroupAsync");
+                return result;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error in RetrieveCurrentUserGroupAsync");
+
+                return null;
+            }
+        }
+
+        public async Task<IMembershipEntity> RetrieveMembershipByMembershipIdAsync(long membershipId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveMembershipByMembershipIdAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveMembershipByMembershipId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter membershipIdParameter = new SqlParameter("@membershipId", SqlDbType.BigInt) { Value = membershipId };
+            command.Parameters.Add(membershipIdParameter);
+            logger.LogTrace($"Parameter {membershipIdParameter.ParameterName} of type {membershipIdParameter.SqlDbType} has value {membershipIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IMembershipEntity result = await LoadMembershipEntity(reader, cancellationToken);
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error in RetrieveMembershipByMembershipIdAsync");
+
+                return null;
+            }
+        }
+
+        public async Task<IList<IUserGroupEntity>> RetrieveUserGroupsByUserIdAsync(long userId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveUserGroupsByUserIdAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveMembershipsByUserId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter userIdParameter = new SqlParameter("@userId", SqlDbType.BigInt) { Value = userId };
+            command.Parameters.Add(userIdParameter);
+            logger.LogTrace($"Parameter {userIdParameter.ParameterName} of type {userIdParameter.SqlDbType} has value {userIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                List<IMembershipEntity> memberships = await LoadMembershipEntities(reader, cancellationToken);
+
+                List<IUserGroupEntity> result = new List<IUserGroupEntity>();
+
+                foreach(IMembershipEntity membership in memberships)
+                {
+                    result.Add(await RetrieveUserGroupByUserGroupIdAsync(membership.UserGroupId, cancellationToken));
+                }
+                
+                logger.LogInformation("Successfully Leaving RetrieveUserGroupsByUserIdAsync");
+                return result;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error in RetrieveUserGroupsByUserIdAsync");
+
+                return null;
+            }
+        }
+
+        public async Task<IList<IMembershipEntity>> RetrieveMembershipsByUserGroupIdAsync(long userGroupId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveMembershipsByUserGroupIdAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveMembershipsByUserGroupId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter userGroupIdParameter = new SqlParameter("@userGroupId", SqlDbType.BigInt) { Value = userGroupId };
+            command.Parameters.Add(userGroupIdParameter);
+            logger.LogTrace($"Parameter {userGroupIdParameter.ParameterName} of type {userGroupIdParameter.SqlDbType} has value {userGroupIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                List<IMembershipEntity> memberships = await LoadMembershipEntities(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveMembershipsByUserGroupIdAsync");
+                return memberships;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error in RetrieveMembershipsByUserGroupIdAsync");
+
+                return null;
+            }
+        }
+
+        public async Task<IList<IMembershipEntity>> RetrieveMembershipsByUserIdAsync(long userId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveMembershipsByUserIdAsnyc");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveMembershipsByUserId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter userIdParameter = new SqlParameter("@userId", SqlDbType.BigInt) { Value = userId };
+            command.Parameters.Add(userIdParameter);
+            logger.LogTrace($"Parameter {userIdParameter.ParameterName} of type {userIdParameter.SqlDbType} has value {userIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                List<IMembershipEntity> memberships = await LoadMembershipEntities(reader, cancellationToken);
+
+                logger.LogInformation("Successfully Leaving RetrieveMembershipsByUserIdAsnyc");
+                return memberships;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error in RetrieveMembershipsByUserIdAsnyc");
+
+                return null;
+            }
+        }
+
+        public async Task UpdateMembershipAsync(IMembershipEntity membershipEntity, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered UpdateMembershipAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[UpdateMembership]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger.LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter membershipIdParameter = new SqlParameter("@id", SqlDbType.BigInt) { Value = membershipEntity.Id };
+            command.Parameters.Add(membershipIdParameter);
+            logger.LogTrace($"Parameter {membershipIdParameter.ParameterName} of type {membershipIdParameter.SqlDbType} has value {membershipIdParameter.Value}");
+
+            SqlParameter isActiveParameter = new SqlParameter("@isActive", SqlDbType.Bit) { Value = membershipEntity.IsActive };
+            command.Parameters.Add(isActiveParameter);
+            logger.LogTrace($"Parameter {isActiveParameter.ParameterName} of type {isActiveParameter.SqlDbType} has value {isActiveParameter.Value}");
+
+            SqlParameter isCurrentParameter = new SqlParameter("@isCurrent", SqlDbType.Bit) { Value = membershipEntity.IsCurrent };
+            command.Parameters.Add(isCurrentParameter);
+            logger.LogTrace($"Parameter {isCurrentParameter.ParameterName} of type {isCurrentParameter.SqlDbType} has value {isCurrentParameter.Value}");
+
+            SqlParameter isPrimaryParameter = new SqlParameter("@isPrimary", SqlDbType.Bit) { Value = membershipEntity.IsPrimary };
+            command.Parameters.Add(isPrimaryParameter);
+            logger.LogTrace($"Parameter {isPrimaryParameter.ParameterName} of type {isPrimaryParameter.SqlDbType} has value {isPrimaryParameter.Value}");
+
+            SqlParameter slackMemberIdParameter = new SqlParameter("@slackMemberId", SqlDbType.NVarChar, 256)
+            {
+                Value = (object)membershipEntity.SlackMemberId ?? DBNull.Value
+            };
+            command.Parameters.Add(slackMemberIdParameter);
+            logger.LogTrace($"Parameter {slackMemberIdParameter.ParameterName} of type {slackMemberIdParameter.SqlDbType} has value {slackMemberIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                logger.LogInformation("Successfully Leaving UpdateMembershipAsync");
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error in UpdateMembershipAsync");
+                throw;
+            }
+        }
+
+        private async Task<List<IMembershipEntity>> LoadMembershipEntities(SqlDataReader reader, CancellationToken cancellationToken = new ())
+        {
+            List<IMembershipEntity> results = new List<IMembershipEntity>();
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                results.Add(
+                    new MembershipEntity
+                    {
+                        Id = reader.GetInt64("Id"),
+                        UserId = reader.GetInt64("UserId"),
+                        UserGroupId = reader.GetInt64("UserGroupId"),
+                        IsActive = reader.GetBoolean("IsActive"),
+                        IsCurrent = reader.GetBoolean("IsCurrent"),
+                        IsPrimary = reader.GetBoolean("IsPrimary"),
+                        SlackMemberId = await reader.IsDBNullAsync("SlackMemberId", cancellationToken)
+                        ? null
+                        : reader.GetString("SlackMemberId")
+                    }
+                );
+            }
+
+            return results;
+        }
+
+        private async Task<IMembershipEntity> LoadMembershipEntity(SqlDataReader reader, CancellationToken cancellationToken = new ())
+        {
+            IMembershipEntity result = null;
+
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                result = new MembershipEntity
+                    {
+                        Id = reader.GetInt64("Id"),
+                        UserId = reader.GetInt64("UserId"),
+                        UserGroupId = reader.GetInt64("UserGroupId"),
+                        IsActive = reader.GetBoolean("IsActive"),
+                        IsCurrent = reader.GetBoolean("IsCurrent"),
+                        IsPrimary = reader.GetBoolean("IsPrimary"),
+                        SlackMemberId = await reader.IsDBNullAsync("SlackMemberId", cancellationToken)
+                        ? null
+                        : reader.GetString("SlackMemberId")
+                    };
+            }
+
+            return result;
         }
 
         #endregion
