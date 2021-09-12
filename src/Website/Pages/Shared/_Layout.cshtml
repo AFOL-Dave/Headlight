@@ -1,6 +1,10 @@
-﻿@using Headlight.Models.Options
+﻿@using Headlight.Models;
+@using Headlight.Models.Options
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
 @inject IOptions<LugOptions> lugOptions
+@inject SignInManager<HeadLightUser> SignInManager
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +18,7 @@
         <link rel="stylesheet" href="~/css/klug.css" />
     </environment>
     <environment exclude="development">
-        <link rel="stylesheet" href="~/css/klug.min.css" asp-append-version="true"/>
+        <link rel="stylesheet" href="~/css/klug.min.css" asp-append-version="true" />
     </environment>
 </head>
 <body>
@@ -22,7 +26,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
-                    <img src="/gph/KLUG Logo.gif" class="lug-logo"/>
+                    <img src="/gph/KLUG Logo.gif" class="lug-logo" />
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -31,11 +35,18 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link text-light" asp-area="" asp-page="/Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Administration</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/UserGroup">User Group</a>
+                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/Members">Members</a>
+                                </div>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

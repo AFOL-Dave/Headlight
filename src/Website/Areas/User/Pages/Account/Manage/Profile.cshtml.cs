@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Headlight.Areas.User.Pages.Account.Manage
 {
-    public class IndexModel : PageModel
+    public class ProfileModel : PageModel
     {
         [BindProperty]
         public AccountDetails AccountDetails { get; set; }
@@ -15,8 +15,8 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         [TempData]
         public string StatusMessage { get; set; }
 
-        public IndexModel(UserManager<HeadLightUser> userManager,
-                          SignInManager<HeadLightUser> signInManager)
+        public ProfileModel( UserManager<HeadLightUser> userManager,
+                             SignInManager<HeadLightUser> signInManager )
         {
             _userManager = userManager;
             _signInManager = signInManager;

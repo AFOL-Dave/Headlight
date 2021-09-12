@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Headlight.Areas.User.Pages.Account.Manage
 {
-    public class ManageEmailModel : PageModel
+    public class EmailModel : PageModel
     {
         public bool IsEmailConfirmed { get; set; }
 
@@ -24,12 +24,10 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         [TempData]
         public string StatusMessage { get; set; }
 
-        public ManageEmailModel(UserManager<HeadLightUser> userManager,
-                                SignInManager<HeadLightUser> signInManager,
-                                IEmailSender emailSender)
+        public EmailModel( UserManager<HeadLightUser> userManager,
+                           IEmailSender emailSender )
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _emailSender = emailSender;
         }
 
@@ -129,7 +127,6 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         }
 
         private readonly UserManager<HeadLightUser> _userManager;
-        private readonly SignInManager<HeadLightUser> _signInManager;
         private readonly IEmailSender _emailSender;
     }
 }

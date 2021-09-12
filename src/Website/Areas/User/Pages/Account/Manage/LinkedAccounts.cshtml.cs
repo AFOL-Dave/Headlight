@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Headlight.Areas.User.Pages.Account.Manage
 {
-    public class ManageLinkedAccountsModel : PageModel
+    public class LinkedAccountsModel : PageModel
     {
         public IList<UserLoginInfo> CurrentLogins { get; set; }
 
@@ -21,9 +21,9 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         [TempData]
         public string StatusMessage { get; set; }
 
-        public ManageLinkedAccountsModel( UserManager<HeadLightUser> userManager,
-                                          SignInManager<HeadLightUser> signInManager,
-                                          ILogger<ManageLinkedAccountsModel> logger)
+        public LinkedAccountsModel( UserManager<HeadLightUser> userManager,
+                                    SignInManager<HeadLightUser> signInManager,
+                                    ILogger<LinkedAccountsModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -122,6 +122,6 @@ namespace Headlight.Areas.User.Pages.Account.Manage
 
         private readonly UserManager<HeadLightUser> _userManager;
         private readonly SignInManager<HeadLightUser> _signInManager;
-        private readonly ILogger<ManageLinkedAccountsModel> _logger;
+        private readonly ILogger<LinkedAccountsModel> _logger;
     }
 }

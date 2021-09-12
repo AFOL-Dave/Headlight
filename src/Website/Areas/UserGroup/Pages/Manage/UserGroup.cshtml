@@ -1,0 +1,52 @@
+﻿@page
+@model UserGroupModel
+@{
+    ViewData["Title"] = "Manage User Group";
+}
+
+<h1 class="text-muted my-3">User Group</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<form id="manage-user-group" method="post">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="UserGroup.FullName">Full Name</label>
+            <input asp-for="UserGroup.FullName" class="form-control" tabindex="1" />
+        </div>
+        <div class="form-group col-md-6">
+            <label asp-for="UserGroup.ShortName">Short Name</label>
+            <input asp-for="UserGroup.ShortName" class="form-control" tabindex="2" />
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="UserGroup.SlackWorkspaceId">Slack Workspace Id</label>
+            <input asp-for="UserGroup.SlackWorkspaceId" class="form-control" tabindex="3" />
+        </div>
+        <div class="form-group col-md-6">
+            <label>Join Type</label>
+            <div class="form-check form-check-inline">
+                <label class="form-check-input">
+                    @Html.RadioButtonFor(m => m.UserGroup.JoinType, Headlight.Models.Enumerations.UserGroupJoinType.Open, new { id = "JoinType", @class = "form-check-input" })
+                    Open
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-input">
+                    @Html.RadioButtonFor(m => m.UserGroup.JoinType, Headlight.Models.Enumerations.UserGroupJoinType.Gated, new { id = "JoinType", @class = "form-check-input" })
+                    Gated
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-input">
+                    @Html.RadioButtonFor(m => m.UserGroup.JoinType, Headlight.Models.Enumerations.UserGroupJoinType.Closed, new { id = "JoinType", @class = "form-check-input" })
+                    Closed
+                </label>
+            </div>
+        </div>
+    </div>
+    <button id="update-user-group-button" type="submit" class="btn btn-dark" tabindex="4">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,53 @@
+﻿@page
+@model MembersModel
+@{
+    ViewData["Title"] = "Manage Members";
+}
+
+<h1 class="text-muted my-3">Members</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<form id="manage-members" method="post">
+    <div class="form-row">
+        <div class="col-md-4">
+            Name
+        </div>
+        <div class="col-md-2">
+            Primary
+        </div>
+        <div class="col-md-2">
+            Active
+        </div>
+        <div class="col-md-4">
+            Actions
+        </div>
+    </div>
+    @foreach (MembershipDetails details in Model.MembershipDetails)
+    {
+        <div class="form-row">
+            <div class="col-md-4">
+                @details.FullName
+            </div>
+            <div class="col-md-2">
+                @details.IsPrimary
+            </div>
+            <div class="col-md-2">
+                @details.IsActive
+            </div>
+            <div class="col-md-4">
+                @if (details.IsActive)
+                {
+                    <button type="submit" class="btn btn-dark" asp-page-handler="ToggleActivation" asp-route-membershipId="@details.Id">Deactivate</button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-dark" asp-page-handler="ToggleActivation" asp-route-membershipId="@details.Id">Activate</button>
+                }
+                <button id="expel-button" type="submit" class="btn btn-dark" asp-page-handler="Expel" asp-route-membershipId="@details.Id" disabled>Expel</button>
+            </div>
+        </div>
+    }
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

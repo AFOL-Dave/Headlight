@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Headlight.Areas.User.Models;
 using Headlight.Models;
+using Headlight.Models.Enumerations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -31,12 +32,16 @@ namespace Headlight.Areas.User.Pages.Account
 
         public ExternalLoginModel(SignInManager<HeadLightUser> signInManager,
                                   UserManager<HeadLightUser> userManager,
+                                  HeadLightMembershipStore membershipStore,
+                                  HeadLightUserGroupStore userGroupStore,
                                   ILookupNormalizer normalizer,
                                   IEmailSender emailSender,
                                   ILogger<ExternalLoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _membershipStore = membershipStore;
+            _userGroupStore = userGroupStore;
             _emailSender = emailSender;
             _normalizer = normalizer;
             _logger = logger;
@@ -156,6 +161,17 @@ namespace Headlight.Areas.User.Pages.Account
 
                     if (result.Succeeded)
                     {
+                        HeadLightUserGroup userGroup = await _userGroupStore.RetrieveUserGroupAsync();
+
+                        HeadLightMembership membership = new HeadLightMembership()
+                        {
+                            UserId = newUser.Id,
+                            UserGroupId = userGroup.Id,
+                            IsActive = userGroup.JoinType != UserGroupJoinType.Gated
+                        };
+
+                        await _membershipStore.CreateMembershipAsync(membership);
+
                         _logger.LogInformation($"User created an account using {loginInfo.LoginProvider} provider.");
 
                         string userId = await _userManager.GetUserIdAsync(newUser);
@@ -194,6 +210,8 @@ namespace Headlight.Areas.User.Pages.Account
 
         private readonly SignInManager<HeadLightUser> _signInManager;
         private readonly UserManager<HeadLightUser> _userManager;
+        private readonly HeadLightMembershipStore _membershipStore;
+        private readonly HeadLightUserGroupStore _userGroupStore;
         private readonly ILogger<ExternalLoginModel> _logger;
         private readonly ILookupNormalizer _normalizer;
         private readonly IEmailSender _emailSender;

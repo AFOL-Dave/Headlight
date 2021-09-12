@@ -1,5 +1,5 @@
 ﻿@page
-@model ManageEmailModel
+@model EmailModel
 @{
     ViewData["Title"] = "Manage Email";
 }
@@ -32,7 +32,7 @@
                 <input asp-for="@Model.NewEmail" class="form-control" />
                 <span asp-validation-for="@Model.NewEmail" class="text-danger"></span>
             </div>
-            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-primary">Change</button>
+            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-dark">Change</button>
         </form>
     </div>
 </div>

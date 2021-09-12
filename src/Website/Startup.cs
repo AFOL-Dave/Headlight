@@ -60,6 +60,13 @@ namespace Headlight
 #else
                 services.AddSingleton<IEmailSender, SendGridMailSender>();
 #endif
+
+            services.AddScoped<IUserGroupDataClient, SqlServerDataClient>();
+            services.AddScoped<IMembershipDataClient, SqlServerDataClient>();
+
+            services.AddScoped<HeadLightUserGroupStore>();
+            services.AddScoped<HeadLightMembershipStore>();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
