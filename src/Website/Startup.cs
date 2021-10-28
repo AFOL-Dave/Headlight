@@ -3,12 +3,11 @@ using System.Linq;
 using Headlight.Data;
 using Headlight.Models;
 using Headlight.Models.Options;
-using Headlight.Services;
+using Headlight.Services.Email;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +27,7 @@ namespace Headlight
         {
             services.Configure<SqlServerDataClientOptions>(Configuration.GetSection(SqlServerDataClientOptions.Section));
             services.Configure<LugOptions>(Configuration.GetSection(LugOptions.Section));
+            services.Configure<SendGridOptions>(Configuration.GetSection(SendGridOptions.Section));
             
             services.AddScoped<IUserDataClient, SqlServerDataClient>();
 
@@ -54,18 +54,20 @@ namespace Headlight
             });
 
             ConfigureAuthentication(services);
-            
+
 #if DEBUG
-                services.AddSingleton<IEmailSender, LocalSmtpMailSender>();
+            services.AddSingleton<IEmailService, LocalSmtpEmailService>();
 #else
-                services.AddSingleton<IEmailSender, SendGridMailSender>();
+            services.AddSingleton<IEmailService, SendGridEmailService>();
 #endif
 
             services.AddScoped<IUserGroupDataClient, SqlServerDataClient>();
             services.AddScoped<IMembershipDataClient, SqlServerDataClient>();
+            //services.AddScoped<IRoleDataClient, SqlServerDataClient>();
 
             services.AddScoped<HeadLightUserGroupStore>();
             services.AddScoped<HeadLightMembershipStore>();
+            //services.AddScoped<HeadLightRoleStore>();
 
         }
 

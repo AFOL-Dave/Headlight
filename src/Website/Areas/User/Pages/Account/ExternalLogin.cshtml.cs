@@ -5,14 +5,16 @@ using System.Threading.Tasks;
 using Headlight.Areas.User.Models;
 using Headlight.Models;
 using Headlight.Models.Enumerations;
+using Headlight.Models.Options;
+using Headlight.Services.Email;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Headlight.Areas.User.Pages.Account
@@ -30,20 +32,22 @@ namespace Headlight.Areas.User.Pages.Account
 
         public string ReturnUrl {get; set;}
 
-        public ExternalLoginModel(SignInManager<HeadLightUser> signInManager,
-                                  UserManager<HeadLightUser> userManager,
-                                  HeadLightMembershipStore membershipStore,
-                                  HeadLightUserGroupStore userGroupStore,
-                                  ILookupNormalizer normalizer,
-                                  IEmailSender emailSender,
-                                  ILogger<ExternalLoginModel> logger)
+        public ExternalLoginModel( SignInManager<HeadLightUser> signInManager,
+                                   UserManager<HeadLightUser> userManager,
+                                   HeadLightMembershipStore membershipStore,
+                                   HeadLightUserGroupStore userGroupStore,
+                                   ILookupNormalizer normalizer,
+                                   IEmailService emailService,
+                                   IOptions<LugOptions> lugOptions,
+                                   ILogger<ExternalLoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _membershipStore = membershipStore;
             _userGroupStore = userGroupStore;
-            _emailSender = emailSender;
+            _emailService = emailService;
             _normalizer = normalizer;
+            _lugOptions = lugOptions.Value;
             _logger = logger;
         }
 
@@ -182,8 +186,11 @@ namespace Headlight.Areas.User.Pages.Account
                                                       values: new { area = "User", userId, code },
                                                       protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Registration.Email, "Confirm Your Email Address",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        IEmailAddress sender = new EmailAddress{ Name = _lugOptions.FullName, Address = _lugOptions.ApproverEmail };
+                        IEmailAddress recipient = new EmailAddress{ Name = newUser.DisplayName, Address = newUser.Email };
+                        await _emailService.SendSingleEmailAsync(sender, recipient, "Confirm Your Email Address",
+                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.",
+                            $"Please confirm your account by visiting this link: {HtmlEncoder.Default.Encode(callbackUrl)}.");
 
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)
                         {
@@ -214,6 +221,7 @@ namespace Headlight.Areas.User.Pages.Account
         private readonly HeadLightUserGroupStore _userGroupStore;
         private readonly ILogger<ExternalLoginModel> _logger;
         private readonly ILookupNormalizer _normalizer;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly LugOptions _lugOptions;
     }
 }
