@@ -1,13 +1,15 @@
 using System.Text;
 using System.Threading.Tasks;
 using Headlight.Models;
+using Headlight.Models.Options;
+using Headlight.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Headlight.Areas.User.Pages.Account
 {
@@ -16,12 +18,14 @@ namespace Headlight.Areas.User.Pages.Account
     {
         public string ValidationMessage { get; set; }
 
-        public EmailConfirmationModel(UserManager<HeadLightUser> userManager,
-                                      IEmailSender emailSender,
-                                      ILogger<EmailConfirmationModel> logger)
+        public EmailConfirmationModel( UserManager<HeadLightUser> userManager,
+                                       IEmailService emailService,
+                                       IOptions<LugOptions> lugOptions,
+                                       ILogger<EmailConfirmationModel> logger )
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
+            _lugOptions = lugOptions.Value;
             _logger = logger;
         }
 
@@ -69,13 +73,14 @@ namespace Headlight.Areas.User.Pages.Account
 
         private void SendAdministratorEmail()
         {
-            _emailSender.SendEmailAsync("info@kenshalug.org",
-                                        "New Registration",
-                                        $"A new user has registered.");
+            IEmailAddress sender = new EmailAddress { Name = _lugOptions.FullName, Address = _lugOptions.ApproverEmail };
+            IEmailAddress recipient = new EmailAddress { Name = _lugOptions.FullName, Address = _lugOptions.ApproverEmail };
+            _emailService.SendSingleEmailAsync(sender, recipient, "New User Registration", "A new user has registered.", "A new user has registered.");
         }
 
         private readonly UserManager<HeadLightUser> _userManager;
         private readonly ILogger<EmailConfirmationModel> _logger;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly LugOptions _lugOptions;
     }
 }

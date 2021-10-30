@@ -3,11 +3,13 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Headlight.Models;
+using Headlight.Models.Options;
+using Headlight.Services.Email;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace Headlight.Areas.User.Pages.Account.Manage
 {
@@ -25,10 +27,12 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         public string StatusMessage { get; set; }
 
         public EmailModel( UserManager<HeadLightUser> userManager,
-                           IEmailSender emailSender )
+                           IEmailService emailService,
+                           IOptions<LugOptions> lugOptions)
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
+            _lugOptions = lugOptions.Value;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -72,9 +76,12 @@ namespace Headlight.Areas.User.Pages.Account.Manage
                                               pageHandler: null,
                                               values: new { userId = userId, email = NewEmail, code = code },
                                               protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(NewEmail,
-                                                  "Confirm Your New Email",
-                                                  $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                
+                IEmailAddress sender = new EmailAddress{ Name = _lugOptions.FullName, Address = _lugOptions.ApproverEmail };
+                IEmailAddress recipient = new EmailAddress{ Name = user.DisplayName, Address = NewEmail };
+                await _emailService.SendSingleEmailAsync(sender, recipient, "Confirm Your Email Address",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.",
+                    $"Please confirm your account by visiting this link: {HtmlEncoder.Default.Encode(callbackUrl)}.");
 
                 StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
@@ -108,9 +115,12 @@ namespace Headlight.Areas.User.Pages.Account.Manage
                                           pageHandler: null,
                                           values: new { area = "User", userId = userId, code = code },
                                           protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(email,
-                                              "Confirm Your Email",
-                                              $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+            IEmailAddress sender = new EmailAddress{ Name = _lugOptions.FullName, Address = _lugOptions.ApproverEmail };
+            IEmailAddress recipient = new EmailAddress{ Name = user.DisplayName, Address = user.Email };
+            await _emailService.SendSingleEmailAsync(sender, recipient, "Confirm Your Email Address",
+                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.",
+                $"Please confirm your account by visiting this link: {HtmlEncoder.Default.Encode(callbackUrl)}.");
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();
@@ -127,6 +137,7 @@ namespace Headlight.Areas.User.Pages.Account.Manage
         }
 
         private readonly UserManager<HeadLightUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
+        private readonly LugOptions _lugOptions;
     }
 }
