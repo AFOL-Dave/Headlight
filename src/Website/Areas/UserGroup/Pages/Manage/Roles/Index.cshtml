@@ -1,0 +1,39 @@
+﻿@page
+@model Headlight.Areas.UserGroup.Pages.Manage.Roles.RoleIndexModel
+@{
+    ViewData["Title"] = "Manage Roles";
+}
+
+<h1 class="text-muted my-3">Roles</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<form id="manage-roles" method="post">
+    <div class="form-row">
+        <div class="col-md-8">
+            Name
+        </div>
+        <div class="col-md-4">
+            Actions
+        </div>
+    </div>
+    @foreach (RoleDetails details in Model.Roles)
+    {
+        <div class="form-row">
+            <div class="col-md-8">
+                @details.Name
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Edit" asp-route-roleId="@details.Id">Edit</a>
+                <button type="submit" class="btn btn-dark" asp-page-handler="DeleteRole" asp-route-roleId="@details.Id">Delete</button>
+            </div>
+        </div>
+    }
+    <div class="form-row">
+        <div class="col-md-12">
+            <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Create" asp-route-userGroupId="@Model.UserGroupId">Create</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

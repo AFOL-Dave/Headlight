@@ -36,7 +36,7 @@ namespace Headlight.Areas.UserGroup.Pages.Manage
 
         public async Task<IActionResult> OnPostExpelAsync(long membershipId)
         {
-            return RedirectToPage();
+            return await Task.FromResult(RedirectToPage());
         }
 
         public async Task<IActionResult> OnPostToggleActivationAsync(long membershipId)

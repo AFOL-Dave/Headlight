@@ -1,0 +1,26 @@
+﻿@page
+@model Headlight.Areas.UserGroup.Pages.Manage.Roles.RoleCreateModel
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+<h1 class="text-muted my-3">Create Role</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<form id="manage-roles" method="post">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="RoleDetails.Name"></label>
+            <input asp-for="RoleDetails.Name" class="form-control" />
+        </div>
+    </div>
+    <div class="form-row">
+        <input type="hidden" name="UserGroupId" value="@Model.UserGroupId" />
+        <div class="col-md-12">
+            <button id="create-role-button" type="submit" class="btn btn-dark">Save</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

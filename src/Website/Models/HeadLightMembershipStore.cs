@@ -156,7 +156,10 @@ namespace Headlight.Models
                     IsPrimary = entity.IsPrimary,
                     UserGroupId = entity.UserGroupId,
                     SlackMemberId = entity.SlackMemberId,
-                    UserId = entity.UserId
+                    UserId = entity.UserId,
+                    DisplayName = entity.DisplayName,
+                    GivenName = entity.GivenName,
+                    SurName = entity.SurName
                 };
 
             return result;
@@ -176,7 +179,10 @@ namespace Headlight.Models
                     IsPrimary = entity.IsPrimary,
                     UserGroupId = entity.UserGroupId,
                     SlackMemberId = entity.SlackMemberId,
-                    UserId = entity.UserId
+                    UserId = entity.UserId,
+                    DisplayName = entity.DisplayName,
+                    GivenName = entity.GivenName,
+                    SurName = entity.SurName
                 });
             }
 

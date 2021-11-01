@@ -63,11 +63,11 @@ namespace Headlight
 
             services.AddScoped<IUserGroupDataClient, SqlServerDataClient>();
             services.AddScoped<IMembershipDataClient, SqlServerDataClient>();
-            //services.AddScoped<IRoleDataClient, SqlServerDataClient>();
+            services.AddScoped<IRoleDataClient, SqlServerDataClient>();
 
             services.AddScoped<HeadLightUserGroupStore>();
             services.AddScoped<HeadLightMembershipStore>();
-            //services.AddScoped<HeadLightRoleStore>();
+            services.AddScoped<HeadLightRoleStore>();
 
         }
 
