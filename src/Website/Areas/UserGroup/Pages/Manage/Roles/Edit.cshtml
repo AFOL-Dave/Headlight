@@ -23,10 +23,10 @@
     <div class="form-row">
         <div class="col-md-5">
             <select name="from" id="multiselect" class="form-control" size="8" multiple="multiple">
-            @foreach(HeadLightRoleMembership member in Model.AssignedMembers)
-            {
-                <option value="@member.MembershipId">@member.DisplayName</option>
-            }
+                @foreach (HeadLightRoleMembership member in Model.AssignedMembers)
+                {
+                    <option value="@member.MembershipId">@member.DisplayName</option>
+                }
             </select>
         </div>
         <div class="col-md-2">

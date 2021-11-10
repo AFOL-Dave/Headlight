@@ -221,13 +221,34 @@ namespace Headlight.Models
             }
         }
 
+        public async Task<IList<HeadLightRoleRight>> RetrieveRightByRightIdUserIdAsync(long rightId, long userId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveRightByRightIdUserIdAsync");
+
+            try
+            {
+                IList<IRightEntity> rightEntites = await roleDataClient.RetrieveRightByRightIdUserIdAsync(rightId, userId, cancellationToken);
+                IList<HeadLightRoleRight> rights = LoadModels(rightEntites);
+
+                logger.LogInformation("Successfully leaving RetrieveRightByRightIdUserIdAsync");
+
+                return rights;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, $"Errir in RetrieveRightByRightIdUserIdAsync {ex.HResult}, {ex.Message}");
+
+                return null;
+            }
+        }
+
         public async Task<IList<HeadLightRoleMembership>> RetrieveRoleMembershipByRoleIdAsync(long roleId, CancellationToken cancellationToken = new ())
         {
             logger.LogInformation("Entered RetrieveRoleMembershipByRoleIdAsync");
 
             try
             {
-                IList<IMembershipRoleEntity> membershipRoleEntities = await roleDataClient.RetrieveMembershipRolesByRoleId(roleId, cancellationToken);
+                IList<IMembershipRoleEntity> membershipRoleEntities = await roleDataClient.RetrieveMembershipRolesByRoleIdAsync(roleId, cancellationToken);
                 IList<HeadLightRoleMembership> roleMemberships = LoadModels(membershipRoleEntities);
 
                 logger.LogInformation("Successfully leaving RetrieveRoleMembershipByRoleIdAsync");

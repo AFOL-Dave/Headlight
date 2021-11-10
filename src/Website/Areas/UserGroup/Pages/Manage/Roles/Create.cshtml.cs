@@ -1,12 +1,14 @@
 using System.Threading.Tasks;
 using Headlight.Areas.UserGroup.Models;
 using Headlight.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
 namespace Headlight.Areas.UserGroup.Pages.Manage.Roles
 {
+    [Authorize(Policy = "CanCreateRole")]
     public class RoleCreateModel : PageModel
     {
         [TempData]

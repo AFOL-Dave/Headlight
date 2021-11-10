@@ -1,4 +1,8 @@
 ﻿@page
+@using Headlight.Models.Attributes;
+@using Headlight.Models.Enumerations;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @model Headlight.Areas.UserGroup.Pages.Manage.Roles.RoleIndexModel
 @{
     ViewData["Title"] = "Manage Roles";
@@ -22,14 +26,23 @@
                 @details.Name
             </div>
             <div class="col-md-4">
-                <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Edit" asp-route-roleId="@details.Id">Edit</a>
-                <button type="submit" class="btn btn-dark" asp-page-handler="DeleteRole" asp-route-roleId="@details.Id">Delete</button>
+                @if ((await AuthorizationService.AuthorizeAsync(User, Right.UpdateRole.GetPolicyName())).Succeeded)
+                {
+                    <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Edit" asp-route-roleId="@details.Id">Edit</a>
+                }
+                @if ((await AuthorizationService.AuthorizeAsync(User, Right.DeleteRole.GetPolicyName())).Succeeded)
+                {
+                    <button type="submit" class="btn btn-dark" asp-page-handler="DeleteRole" asp-route-roleId="@details.Id">Delete</button>
+                }
             </div>
         </div>
     }
     <div class="form-row">
         <div class="col-md-12">
-            <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Create" asp-route-userGroupId="@Model.UserGroupId">Create</a>
+            @if ((await AuthorizationService.AuthorizeAsync(User, Right.CreateRole.GetPolicyName())).Succeeded)
+            {
+                <a class="btn btn-dark" asp-area="UserGroup" asp-page="/Manage/Roles/Create" asp-route-userGroupId="@Model.UserGroupId">Create</a>
+            }
         </div>
     </div>
 </form>

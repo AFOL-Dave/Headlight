@@ -15,7 +15,9 @@ namespace Headlight.Data
 
         Task DeleteRoleAsync(IRoleEntity roleEntity, CancellationToken cancellationToken = new ());
 
-        Task<IList<IMembershipRoleEntity>> RetrieveMembershipRolesByRoleId(long roleId, CancellationToken cancellationToken = new ());
+        Task<IList<IMembershipRoleEntity>> RetrieveMembershipRolesByRoleIdAsync(long roleId, CancellationToken cancellationToken = new ());
+
+        Task<IList<IRightEntity>> RetrieveRightByRightIdUserIdAsync(long rightId, long userId, CancellationToken cancellationToken = new ());
 
         Task<IList<IRightEntity>> RetrieveRightsByRoleIdAsync(long roleId, CancellationToken cancellationToken = new ());
 

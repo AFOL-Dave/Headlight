@@ -1,12 +1,14 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Headlight.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Headlight.Areas.UserGroup.Pages.Manage
 {
+    [Authorize(Policy = "CanMaintainUserGroupProfile")]
     public class UserGroupModel : PageModel
     {
         [TempData]

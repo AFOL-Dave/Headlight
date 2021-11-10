@@ -1,9 +1,13 @@
 ﻿@using Headlight.Models;
+@using Headlight.Models.Attributes;
+@using Headlight.Models.Enumerations;
 @using Headlight.Models.Options
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Options
 @inject IOptions<LugOptions> lugOptions
 @inject SignInManager<HeadLightUser> SignInManager
+@inject IAuthorizationService AuthorizationService
 
 
 <!DOCTYPE html>
@@ -37,16 +41,34 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-page="/Index">Home</a>
                         </li>
+                        @if (SignInManager.IsSignedIn(User) && (await AuthorizationService.AuthorizeAsync(User, "MaintainUserGroup")).Succeeded)
+                        {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">User Group</a>
+                            <div class="dropdown-menu">
+                                @if ((await AuthorizationService.AuthorizeAsync(User, Right.MaintainUserGroupProfile.GetPolicyName())).Succeeded)
+                                {
+                                <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/UserGroup">Profile</a>
+                                }
+                                @if ((await AuthorizationService.AuthorizeAsync(User, "MaintainRoles")).Succeeded)
+                                {
+                                <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/Roles/Index">Roles</a>
+                                }
+                                @if ((await AuthorizationService.AuthorizeAsync(User, Right.MaintainMemberships.GetPolicyName())).Succeeded)
+                                {
+                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/Members">Members</a>
+                                }
+                            </div>
+                        </li>
+                        }
                         @if (SignInManager.IsSignedIn(User))
                         {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Administration</a>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/UserGroup">LUG Profile</a>
-                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/Roles/Index">Roles</a>
-                                    <a class="dropdown-item" asp-area="UserGroup" asp-page="/Manage/Members">Members</a>
-                                </div>
-                            </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Bricks and Sets</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-area="Bricks" asp-page="/LUGBULK">LUGBULK</a>
+                            </div>
+                        </li>
                         }
                     </ul>
                     <partial name="_LoginPartial" />

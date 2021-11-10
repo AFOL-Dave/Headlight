@@ -1370,7 +1370,7 @@ namespace Headlight.Data
             }
         }
 
-        public async Task<IList<IMembershipRoleEntity>> RetrieveMembershipRolesByRoleId(long roleId, CancellationToken cancellationToken)
+        public async Task<IList<IMembershipRoleEntity>> RetrieveMembershipRolesByRoleIdAsync(long roleId, CancellationToken cancellationToken)
         {
             logger.LogInformation("Entered RetrieveMembershipRolesByRoleIdAsync");
 
@@ -1397,6 +1397,42 @@ namespace Headlight.Data
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error in RetrieveMembershipRolesByRoleIdAsync");
+
+                return null;
+            }
+        }
+
+        public async Task<IList<IRightEntity>> RetrieveRightByRightIdUserIdAsync(long rightId, long userId, CancellationToken cancellationToken = new ())
+        {
+            logger.LogInformation("Entered RetrieveRightByRightIdUserIdAsync");
+
+            await using SqlConnection conn = new SqlConnection(connectionString);
+            await using SqlCommand command = new SqlCommand("[dbo].[RetrieveRightByRightIdUserId]", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            logger .LogTrace($"Preparing to call stored procedure: {command.CommandText}");
+
+            SqlParameter rightIdParameter = new SqlParameter("@rightId", SqlDbType.BigInt) { Value = rightId };
+            command.Parameters.Add(rightIdParameter);
+            logger.LogTrace($"Parameter {rightIdParameter.ParameterName} of type {rightIdParameter.SqlDbType} has value {rightIdParameter.Value}");
+
+            SqlParameter userIdParameter = new SqlParameter("@userId", SqlDbType.BigInt) { Value = userId };
+            command.Parameters.Add(userIdParameter);
+            logger.LogTrace($"Parameter {userIdParameter.ParameterName} of type {userIdParameter.SqlDbType} has value {userIdParameter.Value}");
+
+            await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+                IList<IRightEntity> result = await LoadRightEntities(reader, cancellationToken);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in RetrieveRightByRightIdUserIdAsync");
 
                 return null;
             }

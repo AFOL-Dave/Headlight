@@ -4,12 +4,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Headlight.Areas.UserGroup.Models;
 using Headlight.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Headlight.Areas.UserGroup.Pages.Manage
 {
+    [Authorize(Policy = "CanMaintainMemberships")]
     public class MembersModel : PageModel
     {
         [BindProperty(SupportsGet = true)]

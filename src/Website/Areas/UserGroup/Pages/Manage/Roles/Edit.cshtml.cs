@@ -3,13 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Headlight.Areas.UserGroup.Models;
 using Headlight.Models;
+using Headlight.Models.Attributes;
 using Headlight.Models.Enumerations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
 namespace Headlight.Areas.UserGroup.Pages.Manage.Roles
 {
+    [Authorize(Policy = "CanUpdateRole")]
     public class RoleEditModel : PageModel
     {
         public IList<HeadLightRoleMembership> AssignedMembers {get; set;}
