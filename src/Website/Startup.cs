@@ -2,9 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Headlight.Data;
 using Headlight.Models;
+using Headlight.Models.Attributes;
+using Headlight.Models.Enumerations;
 using Headlight.Models.Options;
+using Headlight.Services.Authorization;
 using Headlight.Services.Email;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -54,7 +58,7 @@ namespace Headlight
             });
 
             ConfigureAuthentication(services);
-
+            ConfigureAuthorization(services);
 #if DEBUG
             services.AddSingleton<IEmailService, LocalSmtpEmailService>();
 #else
@@ -63,12 +67,15 @@ namespace Headlight
 
             services.AddScoped<IUserGroupDataClient, SqlServerDataClient>();
             services.AddScoped<IMembershipDataClient, SqlServerDataClient>();
-            //services.AddScoped<IRoleDataClient, SqlServerDataClient>();
+            services.AddScoped<IRoleDataClient, SqlServerDataClient>();
 
             services.AddScoped<HeadLightUserGroupStore>();
             services.AddScoped<HeadLightMembershipStore>();
-            //services.AddScoped<HeadLightRoleStore>();
+            services.AddScoped<HeadLightRoleStore>();
+            services.AddScoped<HeadLightUserStore>();
 
+            services.AddScoped<IAuthorizationHandler, RequiredRightHandler>();
+            services.AddScoped<IAuthorizationHandler, RequireAnyRightHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -147,6 +154,21 @@ namespace Headlight
                         break;
                 }
             }
+        }
+
+        private void ConfigureAuthorization(IServiceCollection services)
+        {
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(Right.CreateRole.GetPolicyName(), policy => policy.Requirements.Add(new RequiredRightRequirement(Right.CreateRole)));
+                options.AddPolicy(Right.UpdateRole.GetPolicyName(), policy => policy.Requirements.Add(new RequiredRightRequirement(Right.UpdateRole)));
+                options.AddPolicy(Right.DeleteRole.GetPolicyName(), policy => policy.Requirements.Add(new RequiredRightRequirement(Right.DeleteRole)));
+                options.AddPolicy(Right.MaintainUserGroupProfile.GetPolicyName(), policy => policy.Requirements.Add(new RequiredRightRequirement(Right.MaintainUserGroupProfile)));
+                options.AddPolicy(Right.MaintainMemberships.GetPolicyName(), policy => policy.Requirements.Add(new RequiredRightRequirement(Right.MaintainMemberships)));
+
+                options.AddPolicy("MaintainRoles", policy => policy.Requirements.Add(new RequireAnyRightRequirement(new List<Right> { Right.CreateRole, Right.UpdateRole, Right.DeleteRole })));
+                options.AddPolicy("MaintainUserGroup", policy => policy.Requirements.Add(new RequireAnyRightRequirement(new List<Right> { Right.CreateRole, Right.UpdateRole, Right.DeleteRole, Right.MaintainUserGroupProfile, Right.MaintainMemberships })));
+            });
         }
     }
 }

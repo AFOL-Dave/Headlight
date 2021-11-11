@@ -1,4 +1,8 @@
 ﻿@page
+@using Headlight.Models.Attributes;
+@using Headlight.Models.Enumerations;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @model UserGroupModel
 @{
     ViewData["Title"] = "Manage User Group";
@@ -44,7 +48,10 @@
             </div>
         </div>
     </div>
-    <button id="update-user-group-button" type="submit" class="btn btn-dark" tabindex="4">Save</button>
+    @if ((await AuthorizationService.AuthorizeAsync(User, Right.MaintainUserGroupProfile.GetPolicyName())).Succeeded)
+    {
+        <button id="update-user-group-button" type="submit" class="btn btn-dark" tabindex="4">Save</button>
+    }
 </form>
 
 @section Scripts {
